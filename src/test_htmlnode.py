@@ -1,5 +1,5 @@
 import unittest
-from htmlnode import HTMLNode, LeafNode
+from htmlnode import HTMLNode, LeafNode, ParentNode
 
 
 class TestHTMLNode(unittest.TestCase):
@@ -71,6 +71,47 @@ class TestHTMLNode(unittest.TestCase):
         self.assertEqual(
             "LeafNode(p, This is an leaf node, {'href': 'https://test.com'})", 
             repr(node)
+        )
+
+    def test_to_html_with_children(self):
+        child_node = LeafNode("span", "child")
+        parent_node = ParentNode("div", [child_node])
+        self.assertEqual(parent_node.to_html(), "<div><span>child</span></div>")
+
+
+    def test_to_html_with_grandchildren(self):
+        grandchild_node = LeafNode("b", "grandchild")
+        child_node = ParentNode("span", [grandchild_node])
+        parent_node = ParentNode("div", [child_node])
+        self.assertEqual(
+            parent_node.to_html(),
+            "<div><span><b>grandchild</b></span></div>",
+        )
+
+    def test_to_html_with_children_with_props(self):
+        child_node = LeafNode("a", "child", { "href": "https://test.com", "target": "_blank" })
+        parent_node = ParentNode("div", [child_node])
+        self.assertEqual(parent_node.to_html(), '<div><a href="https://test.com" target="_blank">child</a></div>')
+
+    def test_to_html_with_grandchildren_with_props(self):
+        grandchild_node = LeafNode("b", "grandchild", { "class": "grandchild" })
+        child_node = ParentNode("span", [grandchild_node])
+        parent_node = ParentNode("div", [child_node])
+        self.assertEqual(
+            parent_node.to_html(),
+            '<div><span><b class="grandchild">grandchild</b></span></div>',
+        )
+
+    def test_to_html_with_children_with_grandchildren(self):
+        grandchild_node1 = LeafNode("a", "grandchild1")
+        child_node1 = ParentNode("span", [grandchild_node1])
+        grandchild_node2 = LeafNode("b", "grandchild2", { "class": "grandchild" })
+        grandchild_node3 = LeafNode("a", "grandchild3", { "href": "https://test.com", "target": "_blank" })
+        child_node2 = ParentNode("span", [grandchild_node2, grandchild_node3])
+        parent_node = ParentNode("div", [child_node1, child_node2])
+        self.assertEqual(
+            parent_node.to_html(),
+            '<div><span><a>grandchild1</a></span><span><b class="grandchild">grandchild2</b><a href="https://test.com" target="_blank">grandchild3</a></span></div>',
         )
 
 
