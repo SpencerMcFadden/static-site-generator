@@ -1,28 +1,29 @@
 import os
 import shutil
 
+from copystatic import copy_contents_to_directory
+from page_generation import generate_page
+
 path_static = "./static"
 path_public = "./public"
+path_content = "./content"
+template_path = "./template.html"
 
 
 def main():
+    print("Deleting public directory...")
+    if os.path.exists(path_public):
+        shutil.rmtree(path_public)
+
+    print("Copying static files to public directory...")
     copy_contents_to_directory(path_static, path_public)
 
-
-def copy_contents_to_directory(source: str, destination: str) -> None:
-    if not os.path.exists(source):
-        raise ValueError("source does not exist")
-    if os.path.exists(destination):
-        shutil.rmtree(destination)
-    os.mkdir(destination)
-
-    source_contents = os.listdir(source)
-    for content in source_contents:
-        working_path = os.path.join(source, content)
-        if os.path.isfile(working_path):
-            shutil.copy(working_path, destination)
-        else:
-            copy_contents_to_directory(working_path, os.path.join(destination, content))
+    print("Generating page...")
+    generate_page(
+        os.path.join(path_content, "index.md"),
+        template_path,
+        os.path.join(path_public, "index.html"),
+    )
 
 
 main()
